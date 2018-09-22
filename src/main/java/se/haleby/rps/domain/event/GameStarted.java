@@ -1,13 +1,11 @@
-package se.haleby.rps.command;
+package se.haleby.rps.domain.event;
 
 import lombok.Builder;
 import lombok.Data;
-import org.axonframework.commandhandling.TargetAggregateIdentifier;
 
 @Data
 @Builder
-public class StartGame {
-    @TargetAggregateIdentifier
+public class GameStarted {
     private final String gameId;
     private final String startedBy;
     private final int rounds;

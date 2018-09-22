@@ -1,8 +1,8 @@
-package se.haleby.rps.event;
+package se.haleby.rps.domain.event;
 
 import lombok.Data;
 
 @Data(staticConstructor = "withGameId")
-public class GameEnded {
+public class GameTied {
     private final String gameId;
 }

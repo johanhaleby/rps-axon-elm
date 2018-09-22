@@ -1,4 +1,4 @@
-package se.haleby.rps.domain;
+package se.haleby.rps.domain.model;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static java.util.stream.Collectors.groupingBy;
-import static se.haleby.rps.domain.Move.*;
+import static se.haleby.rps.domain.model.Move.*;
 
 @Data
 @Accessors(fluent = true)

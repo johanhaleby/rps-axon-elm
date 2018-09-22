@@ -1,4 +1,4 @@
-package se.haleby.rps;
+package se.haleby.rps.domain;
 
 import org.axonframework.test.aggregate.AggregateTestFixture;
 import org.axonframework.test.aggregate.FixtureConfiguration;
@@ -8,14 +8,14 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import se.haleby.rps.command.MakeMove;
-import se.haleby.rps.command.StartGame;
-import se.haleby.rps.domain.Game;
-import se.haleby.rps.event.*;
+import se.haleby.rps.domain.command.MakeMove;
+import se.haleby.rps.domain.command.StartGame;
+import se.haleby.rps.domain.model.Game;
+import se.haleby.rps.domain.event.*;
 
 import java.util.UUID;
 
-import static se.haleby.rps.domain.Move.*;
+import static se.haleby.rps.domain.model.Move.*;
 
 @DisplayName("Game")
 class GameTest {

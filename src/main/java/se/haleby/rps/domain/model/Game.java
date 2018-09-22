@@ -1,12 +1,12 @@
-package se.haleby.rps.domain;
+package se.haleby.rps.domain.model;
 
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.commandhandling.model.AggregateIdentifier;
 import org.axonframework.commandhandling.model.AggregateRoot;
 import org.axonframework.eventsourcing.EventSourcingHandler;
-import se.haleby.rps.command.MakeMove;
-import se.haleby.rps.command.StartGame;
-import se.haleby.rps.event.*;
+import se.haleby.rps.domain.command.MakeMove;
+import se.haleby.rps.domain.command.StartGame;
+import se.haleby.rps.domain.event.*;
 
 import java.util.List;
 import java.util.Map;
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 import static java.util.Collections.emptyList;
 import static java.util.Comparator.comparing;
 import static org.axonframework.commandhandling.model.AggregateLifecycle.apply;
-import static se.haleby.rps.domain.State.*;
+import static se.haleby.rps.domain.model.State.*;
 
 @AggregateRoot
 public class Game {
@@ -32,6 +32,7 @@ public class Game {
     private TreeSet<Round> rounds = TREE_SET_FACTORY.get();
     private int numberOfRoundsInGame;
 
+    @SuppressWarnings("unused")
     Game() {
     }
 

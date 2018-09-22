@@ -1,9 +1,9 @@
-package se.haleby.rps.command;
+package se.haleby.rps.domain.command;
 
 import lombok.Builder;
 import lombok.Data;
 import org.axonframework.commandhandling.TargetAggregateIdentifier;
-import se.haleby.rps.domain.Move;
+import se.haleby.rps.domain.model.Move;
 
 @Data
 @Builder
