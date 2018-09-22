@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static java.util.stream.Collectors.groupingBy;
+import static se.haleby.rps.domain.Move.*;
 
 @Data
 @Accessors(fluent = true)
@@ -79,4 +80,32 @@ class Round {
         }
     }
 
+    @Accessors(fluent = true)
+    @Data
+    private static class PlayerMove {
+        private Player player;
+        private Move move;
+
+        static PlayerMove make(Player player, Move move) {
+            return new PlayerMove().move(move).player(player);
+        }
+
+        boolean isMadeBy(Player player) {
+            return this.player == player;
+        }
+
+        boolean beats(PlayerMove other) {
+            Move otherMove = other.move;
+            switch (this.move) {
+                case ROCK:
+                    return otherMove == SCISSORS;
+                case PAPER:
+                    return otherMove == ROCK;
+                case SCISSORS:
+                    return otherMove == PAPER;
+                default:
+                    return false;
+            }
+        }
+    }
 }
