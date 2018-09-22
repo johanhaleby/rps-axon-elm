@@ -2,23 +2,24 @@ package se.haleby.rps.domain;
 
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.commandhandling.model.AggregateIdentifier;
+import org.axonframework.commandhandling.model.AggregateRoot;
 import org.axonframework.eventsourcing.EventSourcingHandler;
 import se.haleby.rps.command.MakeMove;
 import se.haleby.rps.command.StartGame;
 import se.haleby.rps.event.*;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.emptyList;
 import static java.util.Comparator.comparing;
 import static org.axonframework.commandhandling.model.AggregateLifecycle.apply;
 import static se.haleby.rps.domain.State.*;
-import static se.haleby.rps.support.CollectionSupport.add;
 
+@AggregateRoot
 public class Game {
 
 
@@ -53,9 +54,9 @@ public class Game {
         Round round = getOngoingOrInitiateNextRound(rounds);
         joinGameIfNotAlreadyPlaying(cmd.getPlayerId());
 
-        Round playedRound = round.play(playerOf(cmd.getPlayerId()), cmd.getMove());
-
         apply(MoveMade.builder().gameId(cmd.getGameId()).playerId(cmd.getPlayerId()).move(cmd.getMove()).round(round.roundNumber()).build());
+
+        Round playedRound = rounds.last();
 
         if (playedRound.isEnded()) {
             int currentRoundNumber = rounds.size();
@@ -68,18 +69,18 @@ public class Game {
 
             if (currentRoundNumber == numberOfRoundsInGame) {
                 // We've completed the last round => game has ended!
-                Map<Player, List<Round>> wonRoundsPerPlayer = add(new HashSet<>(rounds), round).stream().collect(Collectors.groupingBy(Round::winner));
-                int wonRoundsPlayer1 = wonRoundsPerPlayer.get(Player.ONE).size();
-                int wonRoundsPlayer2 = wonRoundsPerPlayer.get(Player.TWO).size();
+                Map<Player, List<Round>> wonRoundsPerPlayer = rounds.stream().filter(Round::hasWinner).collect(Collectors.groupingBy(Round::winner));
+                int wonRoundsPlayer1 = wonRoundsPerPlayer.getOrDefault(Player.ONE, emptyList()).size();
+                int wonRoundsPlayer2 = wonRoundsPerPlayer.getOrDefault(Player.TWO, emptyList()).size();
                 if (wonRoundsPlayer1 == wonRoundsPlayer2) {
-                    apply(new GameTied(cmd.getGameId()));
+                    apply(GameTied.withGameId(cmd.getGameId()));
                 } else if (wonRoundsPlayer1 > wonRoundsPlayer2) {
                     apply(GameWon.builder().gameId(cmd.getGameId()).winnerId(playerId1).build());
                 } else {
                     apply(GameWon.builder().gameId(cmd.getGameId()).winnerId(playerId2).build());
                 }
 
-                apply(new GameEnded(cmd.getGameId()));
+                apply(GameEnded.withGameId(cmd.getGameId()));
             }
         }
     }
