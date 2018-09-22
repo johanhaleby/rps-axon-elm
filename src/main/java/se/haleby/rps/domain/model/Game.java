@@ -11,7 +11,6 @@ import se.haleby.rps.domain.event.*;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
@@ -22,14 +21,12 @@ import static se.haleby.rps.domain.model.State.*;
 @AggregateRoot
 public class Game {
 
-    private static final Supplier<TreeSet<Round>> TREE_SET_FACTORY = () -> new TreeSet<>(comparing(Round::roundNumber));
-
     @AggregateIdentifier
     private String id;
     private State state = State.NOT_STARTED;
     private String playerId1;
     private String playerId2;
-    private TreeSet<Round> rounds = TREE_SET_FACTORY.get();
+    private TreeSet<Round> rounds = new TreeSet<>(comparing(Round::roundNumber));
     private int numberOfRoundsInGame;
 
     @SuppressWarnings("unused")
