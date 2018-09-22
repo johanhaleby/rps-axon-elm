@@ -7,6 +7,6 @@ target
 .project
 .settings
 .springBeans
-*/dependency-reduced-pom.xml
+dependency-reduced-pom.xml
 
 pom.xml.versionsBackup
