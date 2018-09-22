@@ -5,11 +5,23 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class Result {
-    enum ResultingState {
-        TIED, WON
+class Result {
+    private final State state;
+    private Player winner;
+
+    public boolean isTied() {
+        return state == State.TIED;
     }
 
-    private final ResultingState state;
-    private final Player winner;
+    public boolean hasWinner() {
+        return state == State.WON;
+    }
+
+    public boolean hasRoundEnded() {
+        return isTied() || hasWinner();
+    }
+
+    public Player winner() {
+        return winner;
+    }
 }

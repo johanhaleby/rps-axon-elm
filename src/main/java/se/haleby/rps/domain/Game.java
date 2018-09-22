@@ -7,29 +7,37 @@ import se.haleby.rps.command.MakeMove;
 import se.haleby.rps.command.StartGame;
 import se.haleby.rps.event.*;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static java.util.Comparator.comparing;
 import static org.axonframework.commandhandling.model.AggregateLifecycle.apply;
 import static se.haleby.rps.domain.State.*;
+import static se.haleby.rps.support.CollectionSupport.add;
 
 public class Game {
 
+
+    private static final Supplier<TreeSet<Round>> TREE_SET_FACTORY = () -> new TreeSet<>(comparing(Round::roundNumber));
 
     @AggregateIdentifier
     private String id;
     private State state = State.NOT_STARTED;
     private String playerId1;
     private String playerId2;
-    private TreeSet<Round> rounds = new TreeSet<>(comparing(Round::roundNumber));
+    private TreeSet<Round> rounds = TREE_SET_FACTORY.get();
     private int numberOfRoundsInGame;
+
+    Game() {
+    }
 
     // Command processing
     @CommandHandler
-    public void handle(StartGame cmd) {
+    public Game(StartGame cmd) {
         if (state != State.NOT_STARTED) {
             throw new IllegalArgumentException("Game is already started");
         }
@@ -45,12 +53,14 @@ public class Game {
         Round round = getOngoingOrInitiateNextRound(rounds);
         joinGameIfNotAlreadyPlaying(cmd.getPlayerId());
 
-        round.play(playerOf(cmd.getPlayerId()), cmd.getMove());
+        Round playedRound = round.play(playerOf(cmd.getPlayerId()), cmd.getMove());
 
-        if (round.isEnded()) {
+        apply(MoveMade.builder().gameId(cmd.getGameId()).playerId(cmd.getPlayerId()).move(cmd.getMove()).round(round.roundNumber()).build());
+
+        if (playedRound.isEnded()) {
             int currentRoundNumber = rounds.size();
-            if (round.hasWinner()) {
-                apply(RoundWon.builder().gameId(cmd.getGameId()).roundNumber(currentRoundNumber).winnerId(playerIdOf(round.winner())).build());
+            if (playedRound.hasWinner()) {
+                apply(RoundWon.builder().gameId(cmd.getGameId()).roundNumber(currentRoundNumber).winnerId(playerIdOf(playedRound.winner())).build());
             } else {
                 apply(RoundTied.builder().gameId(cmd.getGameId()).roundNumber(currentRoundNumber).build());
             }
@@ -58,7 +68,7 @@ public class Game {
 
             if (currentRoundNumber == numberOfRoundsInGame) {
                 // We've completed the last round => game has ended!
-                Map<Player, List<Round>> wonRoundsPerPlayer = rounds.stream().collect(Collectors.groupingBy(Round::winner));
+                Map<Player, List<Round>> wonRoundsPerPlayer = add(new HashSet<>(rounds), round).stream().collect(Collectors.groupingBy(Round::winner));
                 int wonRoundsPlayer1 = wonRoundsPerPlayer.get(Player.ONE).size();
                 int wonRoundsPlayer2 = wonRoundsPerPlayer.get(Player.TWO).size();
                 if (wonRoundsPlayer1 == wonRoundsPlayer2) {
@@ -72,7 +82,6 @@ public class Game {
                 apply(new GameEnded(cmd.getGameId()));
             }
         }
-        apply(MoveMade.builder().gameId(cmd.getGameId()).playerId(cmd.getPlayerId()).move(cmd.getMove()).round(round.roundNumber()).build());
     }
 
 
@@ -102,7 +111,15 @@ public class Game {
 
     @EventSourcingHandler
     public void when(MoveMade evt) {
-        rounds.stream().filter(r -> r.roundNumber() == evt.getRound()).findFirst().ifPresent(r -> r.play(playerOf(evt.getPlayerId()), evt.getMove()));
+        rounds = rounds.stream().map(r -> {
+            final Round round;
+            if (r.roundNumber() == evt.getRound()) {
+                round = r.play(playerOf(evt.getPlayerId()), evt.getMove());
+            } else {
+                round = r;
+            }
+            return round;
+        }).collect(Collectors.toCollection(TREE_SET_FACTORY));
     }
 
     public void when(GameWon evt) {

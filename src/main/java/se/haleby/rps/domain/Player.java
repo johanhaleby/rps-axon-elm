@@ -1,5 +1,5 @@
 package se.haleby.rps.domain;
 
-public enum Player {
+enum Player {
     ONE, TWO
 }

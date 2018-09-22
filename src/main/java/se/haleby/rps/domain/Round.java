@@ -2,65 +2,60 @@ package se.haleby.rps.domain;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import se.haleby.rps.domain.Result.ResultingState;
 
-import java.util.LinkedHashSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+
+import static java.util.stream.Collectors.groupingBy;
+import static se.haleby.rps.support.CollectionSupport.add;
 
 @Data
 @Accessors(fluent = true)
-public class Round {
+class Round {
     private static final int NUMBER_OF_MOVES_PER_ROUND = 2;
     private final int roundNumber;
-    private Set<PlayerMove> moves = new LinkedHashSet<>(NUMBER_OF_MOVES_PER_ROUND);
+    private Set<PlayerMove> moves = new HashSet<>(NUMBER_OF_MOVES_PER_ROUND);
 
-    public boolean hasPlayed(Player player) {
+    private boolean hasPlayed(Player player) {
         return moves.stream().anyMatch(playerMove -> playerMove.isMadeBy(player));
     }
 
-    public boolean hasWinner() {
-        return state() == State.WON;
-    }
-
-    public boolean isTied() {
-        return state() == State.TIED;
-    }
-
-    public boolean isEnded() {
+    boolean isEnded() {
         State state = state();
         return state == State.WON || state == State.TIED;
     }
 
-    public Player winner() {
-        return hasWinner() ? deriveWinnerFromMoves(moves) : null;
+    Player winner() {
+        return determineWinnerFromMoves();
     }
 
-    public Round play(Player player, Move move) {
+    boolean hasWinner() {
+        return determineWinnerFromMoves() != null;
+    }
+
+    Round play(Player player, Move move) {
         if (hasPlayed(player) || isEnded()) {
             return this;
         }
 
-        moves.add(PlayerMove.make(player, move));
-        return this;
+        PlayerMove playerMove = PlayerMove.make(player, move);
+        Set<PlayerMove> updatedMoves = add(new HashSet<>(moves), playerMove);
+        return new Round(roundNumber).moves(updatedMoves);
     }
 
-    public Result result() {
-        State state = state();
-        if (isEnded()) {
-            return new Result(ResultingState.valueOf(state.name()), state == State.WON ? winner() : null);
-        }
-        return null;
-    }
-
-    public State state() {
+    private State state() {
         final State state;
-        if (hasPlayed(Player.ONE) && hasPlayed(Player.TWO)) {
-            if (deriveWinnerFromMoves(moves) == null) {
-                state = State.TIED;
-            } else {
+        boolean hasPlayer1Played = hasPlayed(Player.ONE);
+        boolean hasPlayer2Played = hasPlayed(Player.TWO);
+        if (hasPlayer1Played && hasPlayer2Played) {
+            if (hasWinner()) {
                 state = State.WON;
+            } else {
+                state = State.TIED;
             }
-        } else if (hasPlayed(Player.ONE) || hasPlayed(Player.TWO)) {
+        } else if (hasPlayer1Played || hasPlayer2Played) {
             state = State.ONGOING;
         } else {
             state = State.NOT_STARTED;
@@ -68,14 +63,15 @@ public class Round {
         return state;
     }
 
-    private static Player deriveWinnerFromMoves(Set<PlayerMove> playerMoves) {
-        if (playerMoves.size() != NUMBER_OF_MOVES_PER_ROUND) {
+    private Player determineWinnerFromMoves() {
+        if (moves.size() != NUMBER_OF_MOVES_PER_ROUND) {
             return null;
         }
 
-        PlayerMove[] playerMovesArray = playerMoves.toArray(new PlayerMove[NUMBER_OF_MOVES_PER_ROUND]);
-        PlayerMove playerMove1 = playerMovesArray[0];
-        PlayerMove playerMove2 = playerMovesArray[1];
+        Map<Player, List<PlayerMove>> playerMoves = moves.stream().collect(groupingBy(PlayerMove::player));
+        PlayerMove playerMove1 = playerMoves.get(Player.ONE).get(0);
+        PlayerMove playerMove2 = playerMoves.get(Player.TWO).get(0);
+
         if (playerMove1.move() == playerMove2.move()) {
             return null;
         } else if (playerMove1.beats(playerMove2)) {
