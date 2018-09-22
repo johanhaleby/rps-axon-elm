@@ -39,9 +39,6 @@ public class Game {
     // Command processing
     @CommandHandler
     public Game(StartGame cmd) {
-        if (state != State.NOT_STARTED) {
-            throw new IllegalArgumentException("Game is already started");
-        }
         apply(GameStarted.builder().gameId(cmd.getGameId()).startedBy(cmd.getStartedBy()).rounds(cmd.getRounds()).build());
     }
 
