@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Set;
 
 import static java.util.stream.Collectors.groupingBy;
-import static se.haleby.rps.support.CollectionSupport.add;
 
 @Data
 @Accessors(fluent = true)
@@ -35,14 +34,13 @@ class Round {
         return determineWinnerFromMoves() != null;
     }
 
-    Round play(Player player, Move move) {
+    void play(Player player, Move move) {
         if (hasPlayed(player) || isEnded()) {
-            return this;
+            return;
         }
 
         PlayerMove playerMove = PlayerMove.make(player, move);
-        Set<PlayerMove> updatedMoves = add(new HashSet<>(moves), playerMove);
-        return new Round(roundNumber).moves(updatedMoves);
+        moves.add(playerMove);
     }
 
     private State state() {

@@ -22,7 +22,6 @@ import static se.haleby.rps.domain.State.*;
 @AggregateRoot
 public class Game {
 
-
     private static final Supplier<TreeSet<Round>> TREE_SET_FACTORY = () -> new TreeSet<>(comparing(Round::roundNumber));
 
     @AggregateIdentifier
@@ -112,15 +111,7 @@ public class Game {
 
     @EventSourcingHandler
     public void when(MoveMade evt) {
-        rounds = rounds.stream().map(r -> {
-            final Round round;
-            if (r.roundNumber() == evt.getRound()) {
-                round = r.play(playerOf(evt.getPlayerId()), evt.getMove());
-            } else {
-                round = r;
-            }
-            return round;
-        }).collect(Collectors.toCollection(TREE_SET_FACTORY));
+        rounds.stream().filter(round -> round.roundNumber() == evt.getRound()).findFirst().ifPresent(round -> round.play(playerOf(evt.getPlayerId()), evt.getMove()));
     }
 
     public void when(GameWon evt) {
