@@ -10,8 +10,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import se.haleby.rps.domain.command.MakeMove;
 import se.haleby.rps.domain.command.StartGame;
-import se.haleby.rps.domain.model.Game;
 import se.haleby.rps.domain.event.*;
+import se.haleby.rps.domain.model.Game;
 
 import java.util.UUID;
 
