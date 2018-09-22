@@ -33,12 +33,10 @@ public class GameServer {
         return this;
     }
 
-    public GameServer stop() {
+    public void stop() {
         gameApi.stop();
         axon.shutdown();
-        return this;
     }
-
 
     private static Configuration configureAxon() {
         EventHandlingConfiguration eventHandlingConfiguration = new EventHandlingConfiguration();
