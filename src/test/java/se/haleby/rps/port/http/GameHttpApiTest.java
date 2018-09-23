@@ -22,11 +22,11 @@ class GameHttpApiTest {
     private GameServer gameServer;
 
     @Nested
-    @DisplayName("new game is started")
+    @DisplayName("game is startable")
     class NoGame {
 
         @Test
-        @DisplayName("when PUT to /api/games/:gameId with a valid gameId")
+        @DisplayName("when issuing PUT to /api/games/:gameId with a valid gameId")
         void when_put_to_api_games() {
             startGame("game").then().
                     statusCode(200).
@@ -43,7 +43,7 @@ class GameHttpApiTest {
     class PlayableGame {
 
         @Test
-        @DisplayName("when PUT to /api/games/:gameId with a gameId of an existing game and a move")
+        @DisplayName("when issuing PUT to /api/games/:gameId with a gameId of an ongoing game and a move")
         void when_put_to_api_games() {
             UUID gameId = UUID.randomUUID();
 
@@ -76,11 +76,11 @@ class GameHttpApiTest {
     }
 
     @Nested
-    @DisplayName("games are listable")
+    @DisplayName("multiple games are retrievable")
     class A {
 
         @Test
-        @DisplayName("when GET to /api/games return both ongoing and ended games")
+        @DisplayName("when issuing GET to /api/games return both ongoing and ended games")
         void when_no_query_parameters_are_specified_then_both_ongoing_and_ended_games_are_returned() {
             // Game 1
             startGame("game1");
@@ -117,7 +117,7 @@ class GameHttpApiTest {
         }
 
         @Test
-        @DisplayName("when GET to /api/games?ended=false returns only ongoing games")
+        @DisplayName("when issuing GET to /api/games?ended=false returns only ongoing games")
         void when_query_parameter_ended_is_false_then_only_ongoing_games_are_returned() {
             // Game 1
             startGame("game1");
@@ -147,7 +147,7 @@ class GameHttpApiTest {
         }
 
         @Test
-        @DisplayName("when GET to /api/games?ongoing=false returns only ended games")
+        @DisplayName("when issuing GET to /api/games?ongoing=false returns only ended games")
         void when_query_parameter_ongoing_is_false_then_only_ended_games_are_returned() {
             // Game 1
             startGame("game1");
@@ -250,6 +250,7 @@ class GameHttpApiTest {
         gameServer.stop();
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     private static Response startGame(UUID gameId) {
         return startGame(gameId.toString());
     }
