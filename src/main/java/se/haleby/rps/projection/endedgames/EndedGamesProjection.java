@@ -44,6 +44,6 @@ public class EndedGamesProjection {
     }
 
     public Optional<EndedGame> findById(String gameId) {
-        return Optional.ofNullable(endedGames.get(gameId));
+        return Optional.ofNullable(endedGames.get(gameId)).filter(endedGame -> !endedGame.hasState(ONGOING));
     }
 }
