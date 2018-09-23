@@ -3,10 +3,13 @@ package se.haleby.rps.port.http;
 import io.javalin.Javalin;
 import se.haleby.rps.application.GameApplicationService;
 import se.haleby.rps.domain.model.Move;
+import se.haleby.rps.projection.endedgames.EndedGame;
 import se.haleby.rps.projection.endedgames.EndedGamesProjection;
+import se.haleby.rps.projection.ongoinggames.OngoingGame;
 import se.haleby.rps.projection.ongoinggames.OngoingGamesProjection;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -33,21 +36,21 @@ public class GameApi {
             String player = requireNonNull(ctx.header("player"));
             String move = ctx.formParam("move");
 
-            final CompletableFuture<String> future;
-            if (move == null) {
-                future = gameApplicationService.startGame(gameId, player).thenApply(__ -> "Game started");
-            } else {
-                future = gameApplicationService.makeMove(gameId, player, Move.valueOf(move.toUpperCase())).thenApply(__ -> "Move made");
-            }
-            ctx.result(future);
+            CompletableFuture<?> result = move == null ? gameApplicationService.startGame(gameId, player) : gameApplicationService.makeMove(gameId, player, Move.valueOf(move.toUpperCase()));
+            ctx.json(result.thenApply(__ -> findGame(gameId, ongoingGamesProjection, endedGamesProjection)));
         });
 
         app.get("", ctx -> {
             boolean ongoing = Boolean.valueOf(ctx.queryParam("joinable", "true"));
             boolean ended = Boolean.valueOf(ctx.queryParam("ended", "true"));
-            Stream<GameDTO> ongoingGames = ongoing ? ongoingGamesProjection.findAll().stream().map(ongoingGame -> new GameDTO(ongoingGame.gameId(), ongoingGame.playerId1(), ongoingGame.playerId2(), null, ONGOING, ongoingGame.joinable())) : Stream.empty();
-            Stream<GameDTO> endedGames = ended ? endedGamesProjection.findAll().stream().map(endedGame -> new GameDTO(endedGame.gameId(), endedGame.playerId1(), endedGame.playerId2(), endedGame.winnerId(), endedGame.state(), false)) : Stream.empty();
+            Stream<GameDTO> ongoingGames = ongoing ? ongoingGamesProjection.findAll().stream().map(ONGOING_GAME_TO_DTO) : Stream.empty();
+            Stream<GameDTO> endedGames = ended ? endedGamesProjection.findAll().stream().map(ENDED_GAME_TO_DTO) : Stream.empty();
             ctx.json(Stream.concat(ongoingGames, endedGames).collect(Collectors.toList()));
+        });
+
+        app.get("/:gameId", ctx -> {
+            String gameId = requireNonNull(ctx.pathParam("gameId"));
+            ctx.json(findGame(gameId, ongoingGamesProjection, endedGamesProjection));
         });
     }
 
@@ -57,5 +60,12 @@ public class GameApi {
 
     public void stop() {
         app.stop();
+    }
+
+    private static final Function<OngoingGame, GameDTO> ONGOING_GAME_TO_DTO = ongoingGame -> new GameDTO(ongoingGame.gameId(), ongoingGame.playerId1(), ongoingGame.playerId2(), null, ONGOING, ongoingGame.joinable());
+    private static final Function<EndedGame, GameDTO> ENDED_GAME_TO_DTO = endedGame -> new GameDTO(endedGame.gameId(), endedGame.playerId1(), endedGame.playerId2(), endedGame.winnerId(), endedGame.state(), false);
+
+    private static GameDTO findGame(String gameId, OngoingGamesProjection ongoingGames, EndedGamesProjection endedGames) {
+        return ongoingGames.findById(gameId).map(ONGOING_GAME_TO_DTO).orElseGet(() -> endedGames.findById(gameId).map(ENDED_GAME_TO_DTO).orElseThrow(() -> new IllegalStateException("Internal error: Couldn't find game in ongoing games or ended games")));
     }
 }

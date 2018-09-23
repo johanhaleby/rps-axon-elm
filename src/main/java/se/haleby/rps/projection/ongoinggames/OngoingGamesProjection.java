@@ -9,12 +9,13 @@ import se.haleby.rps.domain.event.SecondPlayerJoinedGame;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class OngoingGamesProjection {
 
-    private final Map<String, OngoingGame> ongoingGames = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, OngoingGame> ongoingGames = new ConcurrentHashMap<>();
 
     @EventHandler
     public void when(GameStarted evt) {
@@ -38,5 +39,9 @@ public class OngoingGamesProjection {
 
     public List<OngoingGame> findAll() {
         return Collections.unmodifiableList(new ArrayList<>(ongoingGames.values()));
+    }
+
+    public Optional<OngoingGame> findById(String gameId) {
+        return Optional.ofNullable(ongoingGames.get(gameId));
     }
 }

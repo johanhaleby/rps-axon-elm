@@ -9,6 +9,7 @@ import se.haleby.rps.domain.event.SecondPlayerJoinedGame;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -40,5 +41,9 @@ public class EndedGamesProjection {
 
     public List<EndedGame> findAll() {
         return endedGames.values().stream().filter(game -> !game.hasState(ONGOING)).collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
+    }
+
+    public Optional<EndedGame> findById(String gameId) {
+        return Optional.ofNullable(endedGames.get(gameId));
     }
 }

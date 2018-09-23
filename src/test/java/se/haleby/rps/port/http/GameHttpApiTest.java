@@ -13,6 +13,8 @@ import java.util.UUID;
 import static io.restassured.RestAssured.*;
 import static org.hamcrest.Matchers.*;
 import static se.haleby.rps.domain.model.Move.*;
+import static se.haleby.rps.domain.model.State.ONGOING;
+import static se.haleby.rps.domain.model.State.WON;
 
 @DisplayName("Game HTTP API")
 class GameHttpApiTest {
@@ -26,7 +28,13 @@ class GameHttpApiTest {
         @Test
         @DisplayName("when PUT to /api/games/:gameId with a valid gameId")
         void when_put_to_api_games() {
-            startGame(UUID.randomUUID()).then().statusCode(200).and().body(equalTo("Game started"));
+            startGame("game").then().
+                    statusCode(200).
+                    body(
+                            "gameId", equalTo("game"),
+                            "state", equalTo(ONGOING.name()),
+                            "joinable", is(true)
+                    );
         }
     }
 
@@ -40,7 +48,14 @@ class GameHttpApiTest {
             UUID gameId = UUID.randomUUID();
 
             startGame(gameId);
-            makeMove(gameId, "player1", ROCK).then().statusCode(200).body(equalTo("Move made"));
+            makeMove(gameId, "player1", ROCK).then().
+                    statusCode(200).
+                    body(
+                            "gameId", equalTo(gameId.toString()),
+                            "playerId1", equalTo("player1"),
+                            "state", equalTo(ONGOING.name()),
+                            "joinable", is(true)
+                    );
         }
 
         @Test
@@ -159,6 +174,56 @@ class GameHttpApiTest {
             then().
                     statusCode(200).
                     body("collect { it.gameId}", hasItems("game1"));
+        }
+    }
+
+    @Nested
+    @DisplayName("game is retrievable")
+    class GetGame {
+
+        @Test
+        @DisplayName("when issuing GET to /api/games/:gameId and game is ended")
+        void game_is_retrievable_when_ended() {
+            String gameId = "game1";
+            startGame(gameId);
+            makeMove(gameId, "player1", ROCK);
+            makeMove(gameId, "player2", SCISSORS);
+            makeMove(gameId, "player1", ROCK);
+            makeMove(gameId, "player2", SCISSORS);
+
+            when().
+                    get("/{gameId}", gameId).
+            then().
+                    statusCode(200).
+                    body(
+                            "gameId", equalTo(gameId),
+                            "playerId1", equalTo("player1"),
+                            "playerId2", equalTo("player2"),
+                            "winnerId", equalTo("player1"),
+                            "state", equalTo(WON.name()),
+                            "joinable", is(false)
+                    );
+        }
+        
+        @Test
+        @DisplayName("when issuing GET to /api/games/:gameId and game is ongoing")
+        void game_is_retrievable_when_ongoing() {
+            String gameId = "game1";
+            startGame(gameId);
+            makeMove(gameId, "player1", ROCK);
+            makeMove(gameId, "player2", SCISSORS);
+
+            when().
+                    get("/{gameId}", gameId).
+            then().
+                    statusCode(200).
+                    body(
+                            "gameId", equalTo(gameId),
+                            "playerId1", equalTo("player1"),
+                            "playerId2", equalTo("player2"),
+                            "state", equalTo(ONGOING.name()),
+                            "joinable", is(false)
+                    );
         }
     }
 
