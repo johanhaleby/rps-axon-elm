@@ -61,11 +61,19 @@ public class Game {
             }
             apply(RoundEnded.builder().gameId(cmd.getGameId()).roundNumber(currentRoundNumber).build());
 
-            if (currentRoundNumber == numberOfRoundsInGame) {
+
+            Map<Player, List<Round>> wonRoundsPerPlayer = rounds.stream().filter(Round::hasWinner).collect(Collectors.groupingBy(Round::winner));
+            int wonRoundsPlayer1 = wonRoundsPerPlayer.getOrDefault(Player.ONE, emptyList()).size();
+            int wonRoundsPlayer2 = wonRoundsPerPlayer.getOrDefault(Player.TWO, emptyList()).size();
+            int majorityRounds = numberOfRoundsInGame / 2;
+            if (wonRoundsPlayer1 > majorityRounds) {
+                apply(GameWon.builder().gameId(cmd.getGameId()).winnerId(playerId1).build());
+                apply(GameEnded.withGameId(cmd.getGameId()));
+            } else if (wonRoundsPlayer2 > majorityRounds) {
+                apply(GameWon.builder().gameId(cmd.getGameId()).winnerId(playerId2).build());
+                apply(GameEnded.withGameId(cmd.getGameId()));
+            } else if (currentRoundNumber == numberOfRoundsInGame) {
                 // We've completed the last round => game has ended!
-                Map<Player, List<Round>> wonRoundsPerPlayer = rounds.stream().filter(Round::hasWinner).collect(Collectors.groupingBy(Round::winner));
-                int wonRoundsPlayer1 = wonRoundsPerPlayer.getOrDefault(Player.ONE, emptyList()).size();
-                int wonRoundsPlayer2 = wonRoundsPerPlayer.getOrDefault(Player.TWO, emptyList()).size();
                 if (wonRoundsPlayer1 == wonRoundsPlayer2) {
                     apply(GameTied.withGameId(cmd.getGameId()));
                 } else if (wonRoundsPlayer1 > wonRoundsPlayer2) {
@@ -73,7 +81,6 @@ public class Game {
                 } else {
                     apply(GameWon.builder().gameId(cmd.getGameId()).winnerId(playerId2).build());
                 }
-
                 apply(GameEnded.withGameId(cmd.getGameId()));
             }
         }

@@ -161,6 +161,43 @@ class GameTest {
                             GameEnded.withGameId(gameId)
                     );
         }
+
+        @Test
+        void when_move_results_in_a_win_due_to_majority_won_rounds(){
+            String gameId = UUID.randomUUID().toString();
+            String playerId1 = "123";
+            String playerId2 = "124";
+
+            fixture
+                    .given(
+                            GameStarted.builder().gameId(gameId).rounds(5).startedBy(playerId1).build(),
+                            RoundStarted.builder().gameId(gameId).roundNumber(1).build(),
+                            FirstPlayerJoinedGame.builder().gameId(gameId).playerId(playerId1).build(),
+                            MoveMade.builder().gameId(gameId).playerId(playerId1).round(1).move(ROCK).build(),
+                            SecondPlayerJoinedGame.builder().gameId(gameId).playerId(playerId2).build(),
+                            MoveMade.builder().gameId(gameId).playerId(playerId2).round(1).move(SCISSORS).build(),
+                            RoundWon.builder().gameId(gameId).roundNumber(1).winnerId(playerId1).build(),
+                            RoundEnded.builder().gameId(gameId).roundNumber(1).build(),
+                            RoundStarted.builder().gameId(gameId).roundNumber(2).build(),
+                            MoveMade.builder().gameId(gameId).playerId(playerId1).round(2).move(SCISSORS).build(),
+                            MoveMade.builder().gameId(gameId).playerId(playerId2).round(2).move(PAPER).build(),
+                            RoundWon.builder().gameId(gameId).roundNumber(2).winnerId(playerId1).build(),
+                            RoundEnded.builder().gameId(gameId).roundNumber(2).build(),
+                            RoundStarted.builder().gameId(gameId).roundNumber(3).build(),
+                            MoveMade.builder().gameId(gameId).playerId(playerId2).round(3).move(SCISSORS).build()
+                            )
+                    .when(
+                            MakeMove.builder().gameId(gameId).move(ROCK).playerId(playerId1).build()
+                    )
+                    .expectSuccessfulHandlerExecution()
+                    .expectEvents(
+                            MoveMade.builder().gameId(gameId).playerId(playerId1).round(3).move(ROCK).build(),
+                            RoundWon.builder().gameId(gameId).roundNumber(3).winnerId(playerId1).build(),
+                            RoundEnded.builder().gameId(gameId).roundNumber(3).build(),
+                            GameWon.builder().gameId(gameId).winnerId(playerId1).build(),
+                            GameEnded.withGameId(gameId)
+                    );
+        }
     }
 
     @Nested
