@@ -8,6 +8,10 @@ import org.axonframework.eventsourcing.eventstore.inmemory.InMemoryEventStorageE
 import se.haleby.rps.application.GameApplicationService;
 import se.haleby.rps.domain.model.Game;
 import se.haleby.rps.port.http.GameApi;
+import se.haleby.rps.projection.endedgames.EndedGamesProjection;
+import se.haleby.rps.projection.ongoinggames.OngoingGamesProjection;
+
+import java.util.Arrays;
 
 public class GameServer {
 
@@ -23,8 +27,12 @@ public class GameServer {
     }
 
     public GameServer(int port) {
-        axon = configureAxon();
-        gameApi = new GameApi(port, new GameApplicationService(axon.commandGateway(), ROUNDS_IN_GAME));
+        OngoingGamesProjection ongoingGamesProjection = new OngoingGamesProjection();
+        EndedGamesProjection endedGamesProjection = new EndedGamesProjection();
+
+        axon = configureAxon(ongoingGamesProjection, endedGamesProjection);
+        gameApi = new GameApi(port, new GameApplicationService(axon.commandGateway(), ROUNDS_IN_GAME),
+                ongoingGamesProjection, endedGamesProjection);
     }
 
     public GameServer start() {
@@ -38,9 +46,9 @@ public class GameServer {
         axon.shutdown();
     }
 
-    private static Configuration configureAxon() {
+    private static Configuration configureAxon(Object... projections) {
         EventHandlingConfiguration eventHandlingConfiguration = new EventHandlingConfiguration();
-        // eventHandlingConfiguration.registerEventHandler(c -> projection);
+        Arrays.stream(projections).forEach(projection -> eventHandlingConfiguration.registerEventHandler(__ -> projection));
         return DefaultConfigurer.defaultConfiguration()
                 .configureAggregate(Game.class)
                 .configureEventStore(c -> new EmbeddedEventStore(new InMemoryEventStorageEngine())) //(2)

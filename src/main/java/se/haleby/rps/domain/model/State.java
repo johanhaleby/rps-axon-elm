@@ -1,5 +1,5 @@
 package se.haleby.rps.domain.model;
 
-enum State {
+public enum State {
     NOT_STARTED, ONGOING, TIED, WON
 }
