@@ -65,7 +65,8 @@ class GameHttpApiTest {
     class A {
 
         @Test
-        void when_no_query_parameters_are_specified_then_both_ongoing_and_ended_games_are_listed() {
+        @DisplayName("when GET to /api/games return both ongoing and ended games")
+        void when_no_query_parameters_are_specified_then_both_ongoing_and_ended_games_are_returned() {
             // Game 1
             startGame("game1");
             makeMove("game1", "player1", ROCK);
@@ -98,6 +99,66 @@ class GameHttpApiTest {
                             withArgs("game3"), Matchers.<Map<String, Object>>allOf(hasEntry("state", "ONGOING"), hasEntry("joinable", true), hasEntry("playerId1", "player1"), not(hasKey("playerId2")), not(hasKey("winnerId"))),
                             withArgs("game4"), Matchers.<Map<String, Object>>allOf(hasEntry("state", "ONGOING"), hasEntry("joinable", false), hasEntry("playerId1", "player1"), hasEntry("playerId2", "player2"), not(hasKey("winnerId")))
                     );
+        }
+
+        @Test
+        @DisplayName("when GET to /api/games?ended=false returns only ongoing games")
+        void when_query_parameter_ended_is_false_then_only_ongoing_games_are_returned() {
+            // Game 1
+            startGame("game1");
+            makeMove("game1", "player1", ROCK);
+            makeMove("game1", "player2", SCISSORS);
+            makeMove("game1", "player1", ROCK);
+            makeMove("game1", "player2", SCISSORS);
+
+            // Game 2
+            startGame("game2");
+
+            // Game 3
+            startGame("game3");
+            makeMove("game3", "player1", ROCK);
+
+            // Game 4
+            startGame("game4");
+            makeMove("game4", "player1", ROCK);
+            makeMove("game4", "player2", ROCK);
+
+            // Check
+            when().
+                    get("/").
+            then().
+                    statusCode(200).
+                    body("collect { it.gameId}", hasItems("game2", "game3", "game4"));
+        }
+
+        @Test
+        @DisplayName("when GET to /api/games?ongoing=false returns only ended games")
+        void when_query_parameter_ongoing_is_false_then_only_ended_games_are_returned() {
+            // Game 1
+            startGame("game1");
+            makeMove("game1", "player1", ROCK);
+            makeMove("game1", "player2", SCISSORS);
+            makeMove("game1", "player1", ROCK);
+            makeMove("game1", "player2", SCISSORS);
+
+            // Game 2
+            startGame("game2");
+
+            // Game 3
+            startGame("game3");
+            makeMove("game3", "player1", ROCK);
+
+            // Game 4
+            startGame("game4");
+            makeMove("game4", "player1", ROCK);
+            makeMove("game4", "player2", ROCK);
+
+            // Check
+            when().
+                    get("/").
+            then().
+                    statusCode(200).
+                    body("collect { it.gameId}", hasItems("game1"));
         }
     }
 
@@ -139,5 +200,4 @@ class GameHttpApiTest {
     private static Response makeMove(String gameId, String playerId, Move move) {
         return given().header("player", playerId).formParam("move", move).when().put("{gameId}", gameId);
     }
-
 }
