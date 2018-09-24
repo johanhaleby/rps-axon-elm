@@ -20,18 +20,18 @@ public class GameInfoProjection {
     private final Map<String, GameInfo> games = new ConcurrentHashMap<>();
 
     @EventHandler
-    public void when(GameStarted evt) {
+    public void when(NewGameInitialized evt) {
         games.put(evt.getGameId(), new GameInfo(evt.getGameId(), null, null, null, JOINABLE, true));
     }
 
     @EventHandler
     public void when(FirstPlayerJoinedGame evt) {
-        games.computeIfPresent(evt.getGameId(), (__, ongoingGame) -> ongoingGame.withPlayerId1(evt.getPlayerId()));
+        games.computeIfPresent(evt.getGameId(), (__, startedGame) -> startedGame.withPlayer1(evt.getPlayer()));
     }
 
     @EventHandler
     public void when(SecondPlayerJoinedGame evt) {
-        games.computeIfPresent(evt.getGameId(), (__, gameInfo) -> gameInfo.withPlayerId2(evt.getPlayerId()).withState(ONGOING));
+        games.computeIfPresent(evt.getGameId(), (__, gameInfo) -> gameInfo.withPlayer2(evt.getPlayer()).withState(STARTED));
     }
 
     @EventHandler

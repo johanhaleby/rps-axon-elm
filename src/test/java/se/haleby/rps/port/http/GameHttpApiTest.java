@@ -42,7 +42,7 @@ class GameHttpApiTest {
     class PlayableGame {
 
         @Test
-        @DisplayName("when issuing PUT to /api/games/:gameId with a gameId of an ongoing game and a move")
+        @DisplayName("when issuing PUT to /api/games/:gameId with a gameId of an started game and a move")
         void when_put_to_api_games() {
             UUID gameId = UUID.randomUUID();
 
@@ -51,7 +51,7 @@ class GameHttpApiTest {
                     statusCode(200).
                     body(
                             "gameId", equalTo(gameId.toString()),
-                            "playerId1", equalTo("player1"),
+                            "player1", equalTo("player1"),
                             "state", equalTo(stateOf(JOINABLE))
                     );
         }
@@ -79,7 +79,7 @@ class GameHttpApiTest {
 
         @Test
         @DisplayName("when issuing GET to /api/games returns all games")
-        void when_no_query_parameters_are_specified_then_both_ongoing_and_ended_games_are_returned() {
+        void when_no_query_parameters_are_specified_then_both_started_and_ended_games_are_returned() {
             // Game 1
             startGame("game1");
             makeMove("game1", "player1", ROCK);
@@ -107,16 +107,16 @@ class GameHttpApiTest {
                     body("size()", is(4)).
                     root("find { game -> game.gameId == '%s' }").
                     body(
-                            withArgs("game1"), Matchers.<Map<String, Object>>allOf(hasEntry("state", stateOf(ENDED)), hasEntry("playerId1", "player1"), hasEntry("playerId2", "player2"), hasEntry("winnerId", "player1")),
-                            withArgs("game2"), Matchers.<Map<String, Object>>allOf(hasEntry("state", stateOf(JOINABLE)), not(hasKey("playerId1")), not(hasKey("playerId2")), not(hasKey("winnerId"))),
-                            withArgs("game3"), Matchers.<Map<String, Object>>allOf(hasEntry("state", stateOf(JOINABLE)), hasEntry("playerId1", "player1"), not(hasKey("playerId2")), not(hasKey("winnerId"))),
-                            withArgs("game4"), Matchers.<Map<String, Object>>allOf(hasEntry("state", stateOf(ONGOING)), hasEntry("playerId1", "player1"), hasEntry("playerId2", "player2"), not(hasKey("winnerId")))
+                            withArgs("game1"), Matchers.<Map<String, Object>>allOf(hasEntry("state", stateOf(ENDED)), hasEntry("player1", "player1"), hasEntry("player2", "player2"), hasEntry("winnerId", "player1")),
+                            withArgs("game2"), Matchers.<Map<String, Object>>allOf(hasEntry("state", stateOf(JOINABLE)), not(hasKey("player1")), not(hasKey("player2")), not(hasKey("winnerId"))),
+                            withArgs("game3"), Matchers.<Map<String, Object>>allOf(hasEntry("state", stateOf(JOINABLE)), hasEntry("player1", "player1"), not(hasKey("player2")), not(hasKey("winnerId"))),
+                            withArgs("game4"), Matchers.<Map<String, Object>>allOf(hasEntry("state", stateOf(STARTED)), hasEntry("player1", "player1"), hasEntry("player2", "player2"), not(hasKey("winnerId")))
                     );
         }
 
         @Test
-        @DisplayName("when issuing GET to /api/games?state=ongoing returns only ongoing games")
-        void when_query_parameter_state_is_ongoing_then_only_ongoing_games_are_returned() {
+        @DisplayName("when issuing GET to /api/games?state=started returns only started games")
+        void when_query_parameter_state_is_started_then_only_started_games_are_returned() {
             // Game 1
             startGame("game1");
             makeMove("game1", "player1", ROCK);
@@ -138,7 +138,7 @@ class GameHttpApiTest {
 
             // Check
             given().
-                    queryParam("state", stateOf(ONGOING)).
+                    queryParam("state", stateOf(STARTED)).
             when().
                     get("/").
             then().
@@ -234,7 +234,7 @@ class GameHttpApiTest {
 
             // Check
             given().
-                    queryParam("state", stateOf(JOINABLE), stateOf(ONGOING)).
+                    queryParam("state", stateOf(JOINABLE), stateOf(STARTED)).
             when().
                     get("/").
             then().
@@ -263,16 +263,16 @@ class GameHttpApiTest {
                     statusCode(200).
                     body(
                             "gameId", equalTo(gameId),
-                            "playerId1", equalTo("player1"),
-                            "playerId2", equalTo("player2"),
+                            "player1", equalTo("player1"),
+                            "player2", equalTo("player2"),
                             "winnerId", equalTo("player1"),
                             "state", equalTo(stateOf(ENDED))
                     );
         }
 
         @Test
-        @DisplayName("when issuing GET to /api/games/:gameId and game is ongoing")
-        void game_is_retrievable_when_ongoing() {
+        @DisplayName("when issuing GET to /api/games/:gameId and game is started")
+        void game_is_retrievable_when_started() {
             String gameId = "game1";
             startGame(gameId);
             makeMove(gameId, "player1", ROCK);
@@ -284,9 +284,9 @@ class GameHttpApiTest {
                     statusCode(200).
                     body(
                             "gameId", equalTo(gameId),
-                            "playerId1", equalTo("player1"),
-                            "playerId2", equalTo("player2"),
-                            "state", equalTo(stateOf(ONGOING))
+                            "player1", equalTo("player1"),
+                            "player2", equalTo("player2"),
+                            "state", equalTo(stateOf(STARTED))
                     );
         }
     }
@@ -320,15 +320,15 @@ class GameHttpApiTest {
     }
 
     private static Response startGame(String gameId) {
-        return given().header("player", "playerId1").when().put("/{gameId}", gameId);
+        return given().header("player", "player1").when().put("/{gameId}", gameId);
     }
 
-    private static Response makeMove(UUID gameId, String playerId, Move move) {
-        return makeMove(gameId.toString(), playerId, move);
+    private static Response makeMove(UUID gameId, String player, Move move) {
+        return makeMove(gameId.toString(), player, move);
     }
 
-    private static Response makeMove(String gameId, String playerId, Move move) {
-        return given().header("player", playerId).formParam("move", move).when().put("{gameId}", gameId);
+    private static Response makeMove(String gameId, String player, Move move) {
+        return given().header("player", player).formParam("move", move).when().put("{gameId}", gameId);
     }
 
     private String stateOf(GameInfoState state) {

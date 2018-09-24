@@ -5,8 +5,8 @@ import lombok.Data;
 
 @Data
 @Builder
-public class GameStarted {
+public class NewGameInitialized {
     private final String gameId;
-    private final String startedBy;
+    private final String initializedBy;
     private final int rounds;
 }

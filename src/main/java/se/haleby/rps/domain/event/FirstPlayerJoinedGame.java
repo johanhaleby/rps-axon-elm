@@ -7,5 +7,5 @@ import lombok.Data;
 @Builder
 public class FirstPlayerJoinedGame {
     private final String gameId;
-    private final String playerId;
+    private final String player;
 }

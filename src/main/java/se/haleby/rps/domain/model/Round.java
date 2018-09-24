@@ -55,9 +55,9 @@ class Round {
                 state = State.TIED;
             }
         } else if (hasPlayer1Played || hasPlayer2Played) {
-            state = State.ONGOING;
-        } else {
             state = State.STARTED;
+        } else {
+            state = State.INITIALIZED;
         }
         return state;
     }

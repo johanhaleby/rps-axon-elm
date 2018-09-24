@@ -66,9 +66,9 @@ public class GameApi {
         app.stop();
     }
 
-    private static final Function<GameInfo, GameDTO> GAME_INFO_TO_DTO = gameInfo -> new GameDTO(gameInfo.gameId(), gameInfo.playerId1(), gameInfo.playerId2(), gameInfo.winnerId(), gameInfo.state().name().toLowerCase());
+    private static final Function<GameInfo, GameDTO> GAME_INFO_TO_DTO = gameInfo -> new GameDTO(gameInfo.gameId(), gameInfo.player1(), gameInfo.player2(), gameInfo.winnerId(), gameInfo.state().name().toLowerCase());
 
     private static GameDTO findGame(String gameId, GameInfoProjection projection) {
-        return projection.findById(gameId).map(GAME_INFO_TO_DTO).orElseThrow(() -> new IllegalStateException("Internal error: Couldn't find game in ongoing games or ended games"));
+        return projection.findById(gameId).map(GAME_INFO_TO_DTO).orElseThrow(() -> new IllegalStateException("Internal error: Couldn't find game in started games or ended games"));
     }
 }

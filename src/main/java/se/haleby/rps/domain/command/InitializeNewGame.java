@@ -6,9 +6,9 @@ import org.axonframework.commandhandling.TargetAggregateIdentifier;
 
 @Data
 @Builder
-public class StartGame {
+public class InitializeNewGame {
     @TargetAggregateIdentifier
     private final String gameId;
-    private final String startedBy;
+    private final String initializer;
     private final int rounds;
 }
