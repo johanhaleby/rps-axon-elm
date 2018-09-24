@@ -3,25 +3,26 @@ package se.haleby.rps.port.http;
 import io.javalin.Javalin;
 import se.haleby.rps.application.GameApplicationService;
 import se.haleby.rps.domain.model.Move;
-import se.haleby.rps.projection.endedgames.EndedGame;
-import se.haleby.rps.projection.endedgames.EndedGamesProjection;
-import se.haleby.rps.projection.ongoinggames.OngoingGame;
-import se.haleby.rps.projection.ongoinggames.OngoingGamesProjection;
+import se.haleby.rps.projection.gameinfo.GameInfo;
+import se.haleby.rps.projection.gameinfo.GameInfoProjection;
+import se.haleby.rps.projection.gameinfo.GameInfoProjection.Predicates;
+import se.haleby.rps.projection.gameinfo.GameInfoState;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
-import static se.haleby.rps.domain.model.State.ONGOING;
+import static se.haleby.rps.projection.gameinfo.GameInfoProjection.Predicates.all;
 
 public class GameApi {
 
     private final Javalin app;
     private final int port;
 
-    public GameApi(int port, GameApplicationService gameApplicationService, OngoingGamesProjection ongoingGamesProjection, EndedGamesProjection endedGamesProjection) {
+    public GameApi(int port, GameApplicationService gameApplicationService, GameInfoProjection gameInfoProjection) {
         this.port = port;
         app = Javalin.create();
         app.contextPath("/api/games")
@@ -37,20 +38,23 @@ public class GameApi {
             String move = ctx.formParam("move");
 
             CompletableFuture<?> result = move == null ? gameApplicationService.startGame(gameId, player) : gameApplicationService.makeMove(gameId, player, Move.valueOf(move.toUpperCase()));
-            ctx.json(result.thenApply(__ -> findGame(gameId, ongoingGamesProjection, endedGamesProjection)));
+            ctx.json(result.thenApply(__ -> findGame(gameId, gameInfoProjection)));
         });
 
         app.get("", ctx -> {
-            boolean ongoing = Boolean.valueOf(ctx.queryParam("joinable", "true"));
-            boolean ended = Boolean.valueOf(ctx.queryParam("ended", "true"));
-            Stream<GameDTO> ongoingGames = ongoing ? ongoingGamesProjection.findAll().stream().map(ONGOING_GAME_TO_DTO) : Stream.empty();
-            Stream<GameDTO> endedGames = ended ? endedGamesProjection.findAll().stream().map(ENDED_GAME_TO_DTO) : Stream.empty();
-            ctx.json(Stream.concat(ongoingGames, endedGames).collect(Collectors.toList()));
+            Predicate<GameInfo> predicate = ctx.queryParams("state").stream()
+                    .map(stateString -> GameInfoState.valueOf(stateString.trim().toUpperCase()))
+                    .map(Predicates::hasState)
+                    .reduce(Predicate::or)
+                    .orElse(all());
+
+            List<GameDTO> games = gameInfoProjection.find(predicate).stream().map(GAME_INFO_TO_DTO).collect(Collectors.toList());
+            ctx.json(games);
         });
 
         app.get("/:gameId", ctx -> {
             String gameId = requireNonNull(ctx.pathParam("gameId"));
-            ctx.json(findGame(gameId, ongoingGamesProjection, endedGamesProjection));
+            ctx.json(findGame(gameId, gameInfoProjection));
         });
     }
 
@@ -62,10 +66,9 @@ public class GameApi {
         app.stop();
     }
 
-    private static final Function<OngoingGame, GameDTO> ONGOING_GAME_TO_DTO = ongoingGame -> new GameDTO(ongoingGame.gameId(), ongoingGame.playerId1(), ongoingGame.playerId2(), null, ONGOING, ongoingGame.joinable());
-    private static final Function<EndedGame, GameDTO> ENDED_GAME_TO_DTO = endedGame -> new GameDTO(endedGame.gameId(), endedGame.playerId1(), endedGame.playerId2(), endedGame.winnerId(), endedGame.state(), false);
+    private static final Function<GameInfo, GameDTO> GAME_INFO_TO_DTO = gameInfo -> new GameDTO(gameInfo.gameId(), gameInfo.playerId1(), gameInfo.playerId2(), gameInfo.winnerId(), gameInfo.state().name().toLowerCase());
 
-    private static GameDTO findGame(String gameId, OngoingGamesProjection ongoingGames, EndedGamesProjection endedGames) {
-        return ongoingGames.findById(gameId).map(ONGOING_GAME_TO_DTO).orElseGet(() -> endedGames.findById(gameId).map(ENDED_GAME_TO_DTO).orElseThrow(() -> new IllegalStateException("Internal error: Couldn't find game in ongoing games or ended games")));
+    private static GameDTO findGame(String gameId, GameInfoProjection projection) {
+        return projection.findById(gameId).map(GAME_INFO_TO_DTO).orElseThrow(() -> new IllegalStateException("Internal error: Couldn't find game in ongoing games or ended games"));
     }
 }

@@ -57,7 +57,7 @@ class Round {
         } else if (hasPlayer1Played || hasPlayer2Played) {
             state = State.ONGOING;
         } else {
-            state = State.NOT_STARTED;
+            state = State.STARTED;
         }
         return state;
     }

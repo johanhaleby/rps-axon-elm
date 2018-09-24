@@ -8,8 +8,7 @@ import org.axonframework.eventsourcing.eventstore.inmemory.InMemoryEventStorageE
 import se.haleby.rps.application.GameApplicationService;
 import se.haleby.rps.domain.model.Game;
 import se.haleby.rps.port.http.GameApi;
-import se.haleby.rps.projection.endedgames.EndedGamesProjection;
-import se.haleby.rps.projection.ongoinggames.OngoingGamesProjection;
+import se.haleby.rps.projection.gameinfo.GameInfoProjection;
 
 import java.util.Arrays;
 
@@ -27,12 +26,10 @@ public class GameServer {
     }
 
     public GameServer(int port) {
-        OngoingGamesProjection ongoingGamesProjection = new OngoingGamesProjection();
-        EndedGamesProjection endedGamesProjection = new EndedGamesProjection();
+        GameInfoProjection gameInfoProjection = new GameInfoProjection();
 
-        axon = configureAxon(ongoingGamesProjection, endedGamesProjection);
-        gameApi = new GameApi(port, new GameApplicationService(axon.commandGateway(), ROUNDS_IN_GAME),
-                ongoingGamesProjection, endedGamesProjection);
+        axon = configureAxon(gameInfoProjection);
+        gameApi = new GameApi(port, new GameApplicationService(axon.commandGateway(), ROUNDS_IN_GAME), gameInfoProjection);
     }
 
     public GameServer start() {

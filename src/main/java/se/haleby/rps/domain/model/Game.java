@@ -23,7 +23,7 @@ public class Game {
 
     @AggregateIdentifier
     private String id;
-    private State state = State.NOT_STARTED;
+    private State state;
     private String playerId1;
     private String playerId2;
     private TreeSet<Round> rounds = new TreeSet<>(comparing(Round::roundNumber));
@@ -41,7 +41,7 @@ public class Game {
 
     @CommandHandler
     public void handle(MakeMove cmd) {
-        if (state != ONGOING) {
+        if (state != STARTED && state != ONGOING) {
             throw new IllegalStateException("Game is " + state);
         }
 
