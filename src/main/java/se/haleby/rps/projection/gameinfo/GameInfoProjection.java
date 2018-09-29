@@ -36,7 +36,7 @@ public class GameInfoProjection {
 
     @EventHandler
     public void when(GameWon evt) {
-        games.computeIfPresent(evt.getGameId(), (__, gameInfo) -> gameInfo.withState(ENDED).withWinnerId(evt.getWinnerId()));
+        games.computeIfPresent(evt.getGameId(), (__, gameInfo) -> gameInfo.withState(ENDED).withWinner(evt.getWinner()));
     }
 
     @EventHandler

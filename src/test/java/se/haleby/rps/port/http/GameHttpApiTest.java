@@ -103,14 +103,15 @@ class GameHttpApiTest {
             when().
                     get("/").
             then().
+                    log().all().
                     statusCode(200).
                     body("size()", is(4)).
                     root("find { game -> game.gameId == '%s' }").
                     body(
-                            withArgs("game1"), Matchers.<Map<String, Object>>allOf(hasEntry("state", stateOf(ENDED)), hasEntry("player1", "player1"), hasEntry("player2", "player2"), hasEntry("winnerId", "player1")),
-                            withArgs("game2"), Matchers.<Map<String, Object>>allOf(hasEntry("state", stateOf(JOINABLE)), not(hasKey("player1")), not(hasKey("player2")), not(hasKey("winnerId"))),
-                            withArgs("game3"), Matchers.<Map<String, Object>>allOf(hasEntry("state", stateOf(JOINABLE)), hasEntry("player1", "player1"), not(hasKey("player2")), not(hasKey("winnerId"))),
-                            withArgs("game4"), Matchers.<Map<String, Object>>allOf(hasEntry("state", stateOf(STARTED)), hasEntry("player1", "player1"), hasEntry("player2", "player2"), not(hasKey("winnerId")))
+                            withArgs("game1"), Matchers.<Map<String, Object>>allOf(hasEntry("state", stateOf(ENDED)), hasEntry("player1", "player1"), hasEntry("player2", "player2"), hasEntry("winner", "player1")),
+                            withArgs("game2"), Matchers.<Map<String, Object>>allOf(hasEntry("state", stateOf(JOINABLE)), not(hasKey("player1")), not(hasKey("player2")), not(hasKey("winner"))),
+                            withArgs("game3"), Matchers.<Map<String, Object>>allOf(hasEntry("state", stateOf(JOINABLE)), hasEntry("player1", "player1"), not(hasKey("player2")), not(hasKey("winner"))),
+                            withArgs("game4"), Matchers.<Map<String, Object>>allOf(hasEntry("state", stateOf(STARTED)), hasEntry("player1", "player1"), hasEntry("player2", "player2"), not(hasKey("winner")))
                     );
         }
 
@@ -265,7 +266,7 @@ class GameHttpApiTest {
                             "gameId", equalTo(gameId),
                             "player1", equalTo("player1"),
                             "player2", equalTo("player2"),
-                            "winnerId", equalTo("player1"),
+                            "winner", equalTo("player1"),
                             "state", equalTo(stateOf(ENDED))
                     );
         }

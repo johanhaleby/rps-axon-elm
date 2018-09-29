@@ -11,6 +11,6 @@ class GameDTO {
     private final String gameId;
     private final String player1;
     private final String player2;
-    private final String winnerId;
+    private final String winner;
     private final String state;
 }

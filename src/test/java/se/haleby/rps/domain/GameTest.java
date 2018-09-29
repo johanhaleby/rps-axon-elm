@@ -87,7 +87,7 @@ class GameTest {
                     .expectEvents(
                             SecondPlayerJoinedGame.builder().gameId(gameId).player(player2).build(),
                             MoveMade.builder().gameId(gameId).player(player2).round(1).move(SCISSORS).build(),
-                            RoundWon.builder().gameId(gameId).roundNumber(1).winnerId(player1).build(),
+                            RoundWon.builder().gameId(gameId).roundNumber(1).winner(player1).build(),
                             RoundEnded.builder().gameId(gameId).roundNumber(1).build()
                     );
         }
@@ -112,7 +112,7 @@ class GameTest {
                             MoveMade.builder().gameId(gameId).player(player1).round(1).move(ROCK).build(),
                             SecondPlayerJoinedGame.builder().gameId(gameId).player(player2).build(),
                             MoveMade.builder().gameId(gameId).player(player2).round(1).move(SCISSORS).build(),
-                            RoundWon.builder().gameId(gameId).roundNumber(1).winnerId(player1).build(),
+                            RoundWon.builder().gameId(gameId).roundNumber(1).winner(player1).build(),
                             RoundEnded.builder().gameId(gameId).roundNumber(1).build()
                     )
                     .when(
@@ -144,7 +144,7 @@ class GameTest {
                             MoveMade.builder().gameId(gameId).player(player1).round(1).move(ROCK).build(),
                             SecondPlayerJoinedGame.builder().gameId(gameId).player(player2).build(),
                             MoveMade.builder().gameId(gameId).player(player2).round(1).move(SCISSORS).build(),
-                            RoundWon.builder().gameId(gameId).roundNumber(1).winnerId(player1).build(),
+                            RoundWon.builder().gameId(gameId).roundNumber(1).winner(player1).build(),
                             RoundEnded.builder().gameId(gameId).roundNumber(1).build(),
                             RoundStarted.builder().gameId(gameId).roundNumber(2).build(),
                             MoveMade.builder().gameId(gameId).player(player2).round(2).move(PAPER).build()
@@ -155,9 +155,9 @@ class GameTest {
                     .expectSuccessfulHandlerExecution()
                     .expectEvents(
                             MoveMade.builder().gameId(gameId).player(player1).round(2).move(SCISSORS).build(),
-                            RoundWon.builder().gameId(gameId).roundNumber(2).winnerId(player1).build(),
+                            RoundWon.builder().gameId(gameId).roundNumber(2).winner(player1).build(),
                             RoundEnded.builder().gameId(gameId).roundNumber(2).build(),
-                            GameWon.builder().gameId(gameId).winnerId(player1).build(),
+                            GameWon.builder().gameId(gameId).winner(player1).build(),
                             GameEnded.withGameId(gameId)
                     );
         }
@@ -176,12 +176,12 @@ class GameTest {
                             MoveMade.builder().gameId(gameId).player(player1).round(1).move(ROCK).build(),
                             SecondPlayerJoinedGame.builder().gameId(gameId).player(player2).build(),
                             MoveMade.builder().gameId(gameId).player(player2).round(1).move(SCISSORS).build(),
-                            RoundWon.builder().gameId(gameId).roundNumber(1).winnerId(player1).build(),
+                            RoundWon.builder().gameId(gameId).roundNumber(1).winner(player1).build(),
                             RoundEnded.builder().gameId(gameId).roundNumber(1).build(),
                             RoundStarted.builder().gameId(gameId).roundNumber(2).build(),
                             MoveMade.builder().gameId(gameId).player(player1).round(2).move(SCISSORS).build(),
                             MoveMade.builder().gameId(gameId).player(player2).round(2).move(PAPER).build(),
-                            RoundWon.builder().gameId(gameId).roundNumber(2).winnerId(player1).build(),
+                            RoundWon.builder().gameId(gameId).roundNumber(2).winner(player1).build(),
                             RoundEnded.builder().gameId(gameId).roundNumber(2).build(),
                             RoundStarted.builder().gameId(gameId).roundNumber(3).build(),
                             MoveMade.builder().gameId(gameId).player(player2).round(3).move(SCISSORS).build()
@@ -192,9 +192,9 @@ class GameTest {
                     .expectSuccessfulHandlerExecution()
                     .expectEvents(
                             MoveMade.builder().gameId(gameId).player(player1).round(3).move(ROCK).build(),
-                            RoundWon.builder().gameId(gameId).roundNumber(3).winnerId(player1).build(),
+                            RoundWon.builder().gameId(gameId).roundNumber(3).winner(player1).build(),
                             RoundEnded.builder().gameId(gameId).roundNumber(3).build(),
-                            GameWon.builder().gameId(gameId).winnerId(player1).build(),
+                            GameWon.builder().gameId(gameId).winner(player1).build(),
                             GameEnded.withGameId(gameId)
                     );
         }
@@ -218,7 +218,7 @@ class GameTest {
                             MoveMade.builder().gameId(gameId).player(player1).round(1).move(ROCK).build(),
                             SecondPlayerJoinedGame.builder().gameId(gameId).player(player2).build(),
                             MoveMade.builder().gameId(gameId).player(player2).round(1).move(SCISSORS).build(),
-                            RoundWon.builder().gameId(gameId).roundNumber(1).winnerId(player1).build(),
+                            RoundWon.builder().gameId(gameId).roundNumber(1).winner(player1).build(),
                             RoundEnded.builder().gameId(gameId).roundNumber(1).build(),
                             RoundStarted.builder().gameId(gameId).roundNumber(2).build(),
                             MoveMade.builder().gameId(gameId).player(player1).round(2).move(PAPER).build()
@@ -229,7 +229,7 @@ class GameTest {
                     .expectSuccessfulHandlerExecution()
                     .expectEvents(
                             MoveMade.builder().gameId(gameId).player(player2).round(2).move(SCISSORS).build(),
-                            RoundWon.builder().gameId(gameId).roundNumber(2).winnerId(player2).build(),
+                            RoundWon.builder().gameId(gameId).roundNumber(2).winner(player2).build(),
                             RoundEnded.builder().gameId(gameId).roundNumber(2).build(),
                             GameTied.withGameId(gameId),
                             GameEnded.withGameId(gameId)

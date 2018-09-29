@@ -55,7 +55,7 @@ public class Game {
         if (playedRound.isEnded()) {
             int currentRoundNumber = rounds.size();
             if (playedRound.hasWinner()) {
-                apply(RoundWon.builder().gameId(cmd.getGameId()).roundNumber(currentRoundNumber).winnerId(playerOf(playedRound.winner())).build());
+                apply(RoundWon.builder().gameId(cmd.getGameId()).roundNumber(currentRoundNumber).winner(playerOf(playedRound.winner())).build());
             } else {
                 apply(RoundTied.builder().gameId(cmd.getGameId()).roundNumber(currentRoundNumber).build());
             }
@@ -67,19 +67,19 @@ public class Game {
             int wonRoundsPlayer2 = wonRoundsPerPlayer.getOrDefault(Player.TWO, emptyList()).size();
             int majorityRounds = numberOfRoundsInGame / 2;
             if (wonRoundsPlayer1 > majorityRounds) {
-                apply(GameWon.builder().gameId(cmd.getGameId()).winnerId(player1).build());
+                apply(GameWon.builder().gameId(cmd.getGameId()).winner(player1).build());
                 apply(GameEnded.withGameId(cmd.getGameId()));
             } else if (wonRoundsPlayer2 > majorityRounds) {
-                apply(GameWon.builder().gameId(cmd.getGameId()).winnerId(player2).build());
+                apply(GameWon.builder().gameId(cmd.getGameId()).winner(player2).build());
                 apply(GameEnded.withGameId(cmd.getGameId()));
             } else if (currentRoundNumber == numberOfRoundsInGame) {
                 // We've completed the last round => game has ended!
                 if (wonRoundsPlayer1 == wonRoundsPlayer2) {
                     apply(GameTied.withGameId(cmd.getGameId()));
                 } else if (wonRoundsPlayer1 > wonRoundsPlayer2) {
-                    apply(GameWon.builder().gameId(cmd.getGameId()).winnerId(player1).build());
+                    apply(GameWon.builder().gameId(cmd.getGameId()).winner(player1).build());
                 } else {
-                    apply(GameWon.builder().gameId(cmd.getGameId()).winnerId(player2).build());
+                    apply(GameWon.builder().gameId(cmd.getGameId()).winner(player2).build());
                 }
                 apply(GameEnded.withGameId(cmd.getGameId()));
             }

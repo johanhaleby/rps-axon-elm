@@ -8,5 +8,5 @@ import lombok.Data;
 public class RoundWon {
     private final String gameId;
     private final int roundNumber;
-    private final String winnerId;
+    private final String winner;
 }
