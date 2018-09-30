@@ -103,7 +103,6 @@ class GameHttpApiTest {
             when().
                     get("/").
             then().
-                    log().all().
                     statusCode(200).
                     body("size()", is(4)).
                     root("find { game -> game.gameId == '%s' }").
