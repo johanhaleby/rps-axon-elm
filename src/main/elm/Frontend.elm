@@ -154,15 +154,9 @@ gameStateDecoder =
 
 playerDecoder : Decode.Decoder (Maybe Player)
 playerDecoder =
-    (maybe string)
-        |> andThen (\maybePlayerString ->
-            succeed
-              <| case maybePlayerString of
-                Just player ->
-                   Just (Player player)
-                _ ->
-                   Nothing
-        )
+    string |> andThen
+        (\playerName ->
+            succeed <| (Just >> Player playerName))
 
 gameListDecoder : Decode.Decoder (List Game)
 gameListDecoder =
