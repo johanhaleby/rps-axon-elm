@@ -6,6 +6,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
 import Json.Decode as Decode exposing (field, string, maybe, andThen, succeed, fail)
+import Json.Decode.Pipeline exposing (required, optional, hardcoded)
 import Maybe exposing (withDefault)
 import Url.Builder as Url
 
@@ -169,9 +170,9 @@ gameListDecoder =
 
 gameDecoder : Decode.Decoder Game
 gameDecoder =
-   Decode.map5 Game
-        (field "gameId" string)
-        (field "player1" playerDecoder)
-        (field "player2" playerDecoder)
-        (field "winner" playerDecoder)
-        (field "state" gameStateDecoder)
+   Decode.succeed Game
+        |> required "gameId" string
+        |> optional "player1" playerDecoder Nothing
+        |> optional "player2" playerDecoder Nothing
+        |> optional "winner" playerDecoder Nothing
+        |> required "state" gameStateDecoder

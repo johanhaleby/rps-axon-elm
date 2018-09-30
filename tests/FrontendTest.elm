@@ -1,3 +1,5 @@
+module FrontendTest exposing (..)
+
 import Frontend exposing (..)
 import Expect exposing (equal)
 import Test exposing (Test, test)
@@ -12,8 +14,26 @@ decodesGameList =
                     """
                       [
                           {
-                              "gameId": "game",
+                              "gameId": "game1",
+                              "player1": "player1",
+                              "player2": "player2",
+                              "winner": "player1",
+                              "state": "ended"
+                          },
+                          {
+                              "gameId": "game2",
                               "state": "joinable"
+                          },
+                          {
+                              "gameId": "game3",
+                              "player1": "player1",
+                              "state": "joinable"
+                          },
+                          {
+                              "gameId": "game4",
+                              "player1": "player1",
+                              "player2": "player2",
+                              "state": "started"
                           }
                       ]
                     """
@@ -24,5 +44,8 @@ decodesGameList =
                 equal
                     decodedOutput
                     (Ok
-                        [ Game "game" Nothing (Just <| Player "ikk2") (Just <| Player "ikk3") Joinable ]
+                        [ Game "game1" (Just <| Player "player1") (Just <| Player "player2") (Just <| Player "player1") Ended
+                        , Game "game2" Nothing Nothing Nothing Joinable
+                        , Game "game3" (Just <| Player "player1") Nothing Nothing Joinable
+                        , Game "game4" (Just <| Player "player1") (Just <| Player "player2") Nothing Started]
                     )
