@@ -155,8 +155,8 @@ gameStateDecoder =
 playerDecoder : Decode.Decoder (Maybe Player)
 playerDecoder =
     string |> andThen
-        (\playerName ->
-            succeed <| (Just >> Player playerName))
+        (\player ->
+            succeed <| Just <| Player player)
 
 gameListDecoder : Decode.Decoder (List Game)
 gameListDecoder =
