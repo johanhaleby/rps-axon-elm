@@ -1,0 +1,167 @@
+body {
+    background-color: #d7d7d7;
+}
+
+.container label {
+    color: white;
+}
+
+.underline {
+    text-decoration: underline;
+}
+
+.white-text {
+    color: white;
+}
+
+.winner-text {
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: 95px;
+    font-weight: bold;
+    letter-spacing: -1px;
+    line-height: 1;
+    text-align: center;
+}
+
+.black-text {
+    color: black;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.normal {
+    font-weight: normal;
+}
+
+.move {
+    cursor: pointer;
+}
+
+.hidden {
+    visibility: hidden;
+}
+
+.move:hover {
+    border: 4px solid #d0d0d0;
+}
+
+.move-made {
+    border: 4px solid #fbfec4;
+}
+
+.rps-img {
+    height: 100px;
+    width: 100px;
+}
+
+.top-buffer {
+    margin-top: 5px;
+}
+
+input[type="text"]:invalid {
+    background-color: #ffdddd;
+}
+
+input[type="text"] {
+    background-color: #fbfec4;
+}
+
+h1 {
+    color: white;
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: 25px;
+    font-weight: bold;
+    letter-spacing: -1px;
+    line-height: 1;
+}
+
+/* Card */
+
+.card {
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    transition: 0.3s;
+    width: 100%;
+    border-radius: 5px;
+    background-color: powderblue;
+    margin-bottom: 10px;
+    padding: 10px;
+}
+
+.card:hover {
+    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+}
+/* End Card */
+
+/* Pulse */
+#startGame {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+@-webkit-keyframes pulse {
+  25% {
+    -webkit-transform: scale(1.2);
+    transform: scale(1.2);
+  }
+  75% {
+    -webkit-transform: scale(0.8);
+    transform: scale(0.8);
+  }
+}
+
+@keyframes pulse {
+  25% {
+    -webkit-transform: scale(1.1);
+    -ms-transform: scale(1.1);
+    transform: scale(1.1);
+  }
+  75% {
+    -webkit-transform: scale(0.9);
+    -ms-transform: scale(0.9);
+    transform: scale(0.9);
+  }
+}
+
+.pulse {
+  display: inline-block;
+  -webkit-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  transform: translateZ(0);
+  box-shadow: 0 0 1px rgba(0, 0, 0, 0);
+}
+
+.pulse:hover {
+  -webkit-animation-name: pulse;
+  animation-name: pulse;
+  -webkit-animation-duration: 1.5s;
+  animation-duration: 1.5s;
+  -webkit-animation-timing-function: linear;
+  animation-timing-function: linear;
+  -webkit-animation-iteration-count: infinite;
+  animation-iteration-count: infinite;
+}
+/* Pulse End */
+
+/* Custom button */
+.btn {
+    color: white;
+    font-family: 'Helvetica Neue', sans-serif;
+    background-color: #e7e7e7;
+    font-weight: bold;
+}
+
+.btn:hover {
+    color: white;
+}
+
+.btn:active {
+    color: white;
+}
+
+.btn:focus {
+    color: white;
+    outline:0;
+}
+/* End custom button*/

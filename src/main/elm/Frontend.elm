@@ -92,8 +92,6 @@ subscriptions : List Game -> Sub Msg
 subscriptions model =
   Sub.none
 
-
-
 -- VIEW
 
 
@@ -107,24 +105,51 @@ playerName maybePlayer notFound =
 renderGame : Game -> Html msg
 renderGame game =
     div []
-    [h2 [] [ text <| game.gameId]
-    , div [] [ text <| playerName game.player1 "Looking for player" ]
-    , div [] [ text <| playerName game.player2 "Looking for player" ]
-    , div [] [ text <| playerName game.winner "Undecided" ]
-    , div [] [ text <| Debug.toString game.state ]
+      [ div [class "row"] [
+         h2 [class "col-sm-12"] [ text <| game.gameId]
+        ]
+        , div [class "row"] [
+            div [class "col-sm-4"] [ text <| playerName game.player1 "Looking for player" ]
+          , div [class "col-sm-4"] [ text <| playerName game.player2 "Looking for player" ]
+          , div [class "col-sm-4"] [ text <| playerName game.winner "Undecided" ]
+        ]
     ]
+
+
+stylesheet : String -> Html msg
+stylesheet href =
+    let
+        tag = "link"
+        attrs =
+            [ attribute "rel"       "stylesheet"
+            , attribute "property"  "stylesheet"
+            , attribute "href"      href
+            ]
+        children = []
+    in
+        node tag attrs children
 
 view : List Game -> Html Msg
 view games =
-  div []
-    [ h2 [] [ text "Welcome to RPS" ]
-    , button [ onClick GetAllGames ] [ text "Get all games!" ]
-    , div [] [ text <| Debug.toString (List.length games) ]
-    , ul [] (List.map (\ikk -> Html.text (Debug.toString ikk)) games)
-    , ul [] (List.map renderGame games)
-    , br [] []
-    , textarea [ cols 40, rows 10 ] [ text "hello" ]
-    ]
+    let
+        inner = div [id "inner", class "container"]
+                 [ h1 [class "text-center"] [text "hello flash of unstyled content"]
+                 , h4 [] [ text "Your Name" ]
+                 , input [ attribute "autofocus" "", class "form-control", id "playerName", attribute "minlength" "2", placeholder "Enter your name to play", attribute "required" "", attribute "tabindex" "1", type_ "text" ] []
+                 , h2 [] [ text "Welcome to RPS" ]
+                 , button [ onClick GetAllGames ] [ text "Get all games!" ]
+                 , ul [] (List.map renderGame games)
+                 , br [] []
+                 , textarea [ cols 40, rows 10 ] [ text "hello" ]
+                 ]
+        hero = div [id "hero", class "jumbotron"] [inner]
+    in
+      div [id "outer"]
+        [ (stylesheet "//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css")
+        , (stylesheet "/custom.css")
+        , (stylesheet "https://unpkg.com/purecss@1.0.0/build/pure-min.css")
+        , hero
+        ]
 
 -- HTTP
 

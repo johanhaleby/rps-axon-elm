@@ -5,6 +5,7 @@ import io.restassured.response.Response;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.*;
 import se.haleby.rps.GameServer;
+import se.haleby.rps.GameServer.CmdArgs;
 import se.haleby.rps.domain.model.Move;
 import se.haleby.rps.projection.gameinfo.GameInfoState;
 
@@ -306,7 +307,7 @@ class GameHttpApiTest {
 
     @BeforeEach
     void startServer() {
-        gameServer = new GameServer(8080).start();
+        gameServer = new GameServer(CmdArgs.with().port(8080)).start();
     }
 
     @AfterEach
