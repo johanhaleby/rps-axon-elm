@@ -9,7 +9,6 @@ target
 .springBeans
 elm-stuff
 dependency-reduced-pom.xml
-src/main/resources/compiled-static
-compiled-static
+src/main/resources/compiled-static/*.html
 
 pom.xml.versionsBackup
