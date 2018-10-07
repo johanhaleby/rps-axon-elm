@@ -2,17 +2,22 @@ package se.haleby.rps.port.http;
 
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.*;
 import se.haleby.rps.GameServer;
-import se.haleby.rps.GameServer.CmdArgs;
 import se.haleby.rps.domain.model.Move;
 import se.haleby.rps.projection.gameinfo.GameInfoState;
 
+import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.*;
+import static java.time.temporal.ChronoUnit.SECONDS;
+import static org.exparity.hamcrest.date.DateMatchers.within;
 import static org.hamcrest.Matchers.*;
 import static se.haleby.rps.domain.model.Move.*;
 import static se.haleby.rps.projection.gameinfo.GameInfoState.*;
@@ -104,8 +109,10 @@ class GameHttpApiTest {
             when().
                     get("/").
             then().
+                    log().all().
                     statusCode(200).
                     body("size()", is(4)).
+                    body("createdAt", everyItem(isCloseTo(new Date()))).
                     root("find { game -> game.gameId == '%s' }").
                     body(
                             withArgs("game1"), Matchers.<Map<String, Object>>allOf(hasEntry("state", stateOf(ENDED)), hasEntry("player1", "player1"), hasEntry("player2", "player2"), hasEntry("winner", "player1")),
@@ -140,9 +147,9 @@ class GameHttpApiTest {
             // Check
             given().
                     queryParam("state", stateOf(STARTED)).
-            when().
+                    when().
                     get("/").
-            then().
+                    then().
                     statusCode(200).
                     body("collect { it.gameId}", containsInAnyOrder("game4"));
         }
@@ -174,7 +181,7 @@ class GameHttpApiTest {
                     queryParam("state", stateOf(ENDED)).
                     when().
                     get("/").
-            then().
+                    then().
                     statusCode(200).
                     body("collect { it.gameId}", hasItems("game1"));
         }
@@ -204,9 +211,9 @@ class GameHttpApiTest {
             // Check
             given().
                     queryParam("state", stateOf(JOINABLE)).
-            when().
+                    when().
                     get("/").
-            then().
+                    then().
                     statusCode(200).
                     body("collect { it.gameId}", containsInAnyOrder("game2", "game3"));
         }
@@ -305,17 +312,17 @@ class GameHttpApiTest {
         RestAssured.reset();
     }
 
-    @BeforeEach
-    void startServer() {
-        gameServer = new GameServer(CmdArgs.with().port(8080)).start();
-    }
-
-    @AfterEach
-    void stopServer() {
-        gameServer.stop();
-    }
-
-    @SuppressWarnings("UnusedReturnValue")
+    // @BeforeEach
+    // void startServer() {
+    //     gameServer = new GameServer(CmdArgs.with().port(8080)).start();
+    // }
+    //
+    // @AfterEach
+    // void stopServer() {
+    //     gameServer.stop();
+    // }
+    //
+    // @SuppressWarnings("UnusedReturnValue")
     private static Response startGame(UUID gameId) {
         return startGame(gameId.toString());
     }
@@ -335,4 +342,21 @@ class GameHttpApiTest {
     private String stateOf(GameInfoState state) {
         return state.name().toLowerCase();
     }
+
+    private static Matcher<Long> isCloseTo(Date date) {
+        return new BaseMatcher<Long>() {
+
+            @Override
+            public boolean matches(Object o) {
+                return within(10, SECONDS, date).matches(new Date((Long) o));
+            }
+
+
+            @Override
+            public void describeTo(Description description) {
+                within(10, SECONDS, date).describeTo(description);
+            }
+        };
+    }
+
 }

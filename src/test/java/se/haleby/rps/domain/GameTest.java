@@ -8,11 +8,12 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import se.haleby.rps.domain.command.InitializeNewGame;
+import se.haleby.rps.domain.command.CreateGame;
 import se.haleby.rps.domain.command.MakeMove;
 import se.haleby.rps.domain.event.*;
 import se.haleby.rps.domain.model.Game;
 
+import java.util.Date;
 import java.util.UUID;
 
 import static se.haleby.rps.domain.model.Move.*;
@@ -35,11 +36,12 @@ class GameTest {
         void when_start_game_command_is_issued() {
             String gameId = UUID.randomUUID().toString();
             String player = "123";
+            Date date = new Date();
 
             fixture.givenNoPriorActivity()
-                    .when(InitializeNewGame.builder().gameId(gameId).initializer(player).rounds(3).build())
+                    .when(CreateGame.builder().gameId(gameId).creator(player).rounds(3).creationDate(date).build())
                     .expectSuccessfulHandlerExecution()
-                    .expectEvents(NewGameInitialized.builder().gameId(gameId).rounds(3).initializedBy(player).build());
+                    .expectEvents(GameCreated.builder().gameId(gameId).rounds(3).createdBy(player).createdAt(date).build());
         }
     }
 
@@ -52,7 +54,7 @@ class GameTest {
             String gameId = UUID.randomUUID().toString();
             String player = "123";
 
-            fixture.given(NewGameInitialized.builder().gameId(gameId).rounds(3).initializedBy(player).build())
+            fixture.given(GameCreated.builder().gameId(gameId).rounds(3).createdBy(player).createdAt(new Date()).build())
                     .when(MakeMove.builder().gameId(gameId).move(ROCK).player(player).build())
                     .expectSuccessfulHandlerExecution()
                     .expectEvents(
@@ -75,7 +77,7 @@ class GameTest {
 
             fixture
                     .given(
-                            NewGameInitialized.builder().gameId(gameId).rounds(3).initializedBy(player1).build(),
+                            GameCreated.builder().gameId(gameId).rounds(3).createdBy(player1).createdAt(new Date()).build(),
                             RoundStarted.builder().gameId(gameId).roundNumber(1).build(),
                             FirstPlayerJoinedGame.builder().gameId(gameId).player(player1).build(),
                             MoveMade.builder().gameId(gameId).player(player1).round(1).move(ROCK).build()
@@ -106,7 +108,7 @@ class GameTest {
 
             fixture
                     .given(
-                            NewGameInitialized.builder().gameId(gameId).rounds(3).initializedBy(player1).build(),
+                            GameCreated.builder().gameId(gameId).rounds(3).createdBy(player1).build(),
                             RoundStarted.builder().gameId(gameId).roundNumber(1).build(),
                             FirstPlayerJoinedGame.builder().gameId(gameId).player(player1).build(),
                             MoveMade.builder().gameId(gameId).player(player1).round(1).move(ROCK).build(),
@@ -138,7 +140,7 @@ class GameTest {
 
             fixture
                     .given(
-                            NewGameInitialized.builder().gameId(gameId).rounds(2).initializedBy(player1).build(),
+                            GameCreated.builder().gameId(gameId).rounds(2).createdBy(player1).build(),
                             RoundStarted.builder().gameId(gameId).roundNumber(1).build(),
                             FirstPlayerJoinedGame.builder().gameId(gameId).player(player1).build(),
                             MoveMade.builder().gameId(gameId).player(player1).round(1).move(ROCK).build(),
@@ -170,7 +172,7 @@ class GameTest {
 
             fixture
                     .given(
-                            NewGameInitialized.builder().gameId(gameId).rounds(5).initializedBy(player1).build(),
+                            GameCreated.builder().gameId(gameId).rounds(5).createdBy(player1).build(),
                             RoundStarted.builder().gameId(gameId).roundNumber(1).build(),
                             FirstPlayerJoinedGame.builder().gameId(gameId).player(player1).build(),
                             MoveMade.builder().gameId(gameId).player(player1).round(1).move(ROCK).build(),
@@ -212,7 +214,7 @@ class GameTest {
 
             fixture
                     .given(
-                            NewGameInitialized.builder().gameId(gameId).rounds(2).initializedBy(player1).build(),
+                            GameCreated.builder().gameId(gameId).rounds(2).createdBy(player1).build(),
                             RoundStarted.builder().gameId(gameId).roundNumber(1).build(),
                             FirstPlayerJoinedGame.builder().gameId(gameId).player(player1).build(),
                             MoveMade.builder().gameId(gameId).player(player1).round(1).move(ROCK).build(),

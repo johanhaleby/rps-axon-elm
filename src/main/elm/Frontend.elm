@@ -5,11 +5,11 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
-import Json.Decode as Decode exposing (field, string, maybe, andThen, succeed, fail)
+import Json.Decode as Decode exposing (field, string, maybe, andThen, succeed, fail, int)
 import Json.Decode.Pipeline exposing (required, optional, hardcoded)
 import Maybe exposing (withDefault)
 import Url.Builder as Url
-
+import Time exposing (toMillis, utc, millisToPosix, Posix)
 -- MAIN
 
 
@@ -38,6 +38,7 @@ type State
 
 type alias Game =
   { gameId : GameId
+  , createdAt : Posix
   , player1 : Maybe Player
   , player2 : Maybe Player
   , winner : Maybe Player
@@ -51,6 +52,7 @@ type Move
 type Msg
   = AllGames (Result Http.Error (List Game))
   | GetAllGames
+  | CreateGame
 
 type Action
   = StartGame
@@ -69,9 +71,8 @@ init _ =
 update : Msg -> List Game -> (List Game, Cmd Msg)
 update msg model =
   case msg of
-    GetAllGames ->
-          (model
-           , getAllGames)
+    GetAllGames -> (model , getAllGames)
+    CreateGame -> (model , getAllGames)
     AllGames allGames ->
       case allGames of
         Ok games ->
@@ -104,9 +105,19 @@ playerName maybePlayer notFound =
 
 renderGame : Game -> Html msg
 renderGame game =
-    div []
+    let
+       gameHeader = div [class "row white-text"]
+               [ h3 []
+                  [ text
+                      <| (case (game.state) of
+                                Joinable -> "Ongoing - Play against " ++ (playerName game.player1 "Unknown")
+                                _ -> (playerName game.player1 "Unknown") ++ " vs " ++ (playerName game.player2 "Unknown")
+                         )
+                  ]
+               ]
+    in div [id game.gameId, class "game card"]
       [ div [class "row"] [
-         h2 [class "col-sm-12"] [ text <| game.gameId]
+         h2 [class "col-sm-12"] [ gameHeader ]
         ]
         , div [class "row"] [
             div [class "col-sm-4"] [ text <| playerName game.player1 "Looking for player" ]
@@ -132,15 +143,45 @@ stylesheet href =
 view : List Game -> Html Msg
 view games =
     let
+        renderedGames = List.map renderGame <| List.sortBy (\game -> toMillis utc game.createdAt) games
+        startGame = div [] [
+                      div [ id "startGameDiv" ]
+                           [ h1 [ id "startGameTitle" ] []
+                           , Html.form [ id "startGameForm", attribute "onsubmit" "return false;" ]
+                               [ div [ class "row", id "startGame" ]
+                                   [ div [ class "col-sm-12 card" ]
+                                       [ div [ id "cancelNewGame" ]
+                                           [ a [ attribute "aria-label" "close", class "close" ]
+                                               [ text "×" ]
+                                           ]
+                                       , img [ alt "Rock", class "rps-img move img-thumbnail rounded float-left", attribute "data-move" "Rock", src "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Rock-paper-scissors_%28rock%29.png/200px-Rock-paper-scissors_%28rock%29.png", title "Rock" ] []
+                                       , img [ alt "Paper", class "rps-img move img-thumbnail rounded float-left", attribute "data-move" "Paper", src "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Rock-paper-scissors_%28paper%29.png/200px-Rock-paper-scissors_%28paper%29.png", title "Paper" ] []
+                                       , img [ alt "Scissors", class "rps-img move img-thumbnail rounded float-left", attribute "data-move" "Scissors", src "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Rock-paper-scissors_%28scissors%29.png/200px-Rock-paper-scissors_%28scissors%29.png", title "Scissors" ] []
+                                       ]
+                                   ]
+                               ]
+                           ]
+                      , div [ class "row newGameButtonDiv" ]
+                         [ div [ class "col-sm-12" ]
+                            [ button [ class "btn pulse", id "newGameButton", type_ "button", onClick CreateGame] [ text "New Game" ]
+                         ]
+                      ]
+                    ]
+        onGoingGames = div []
+                  [ h1 [] [ text "Games" ]
+                    , div [ class "row", id "gamesDiv", attribute "style" "overflow-y: auto;" ]
+                       [ div [ class "col-sm-12" ]
+                         [ div [ id "games" ]
+                            renderedGames
+                         ]
+                       ]
+                  ]
         inner = div [id "inner", class "container"]
                  [ h1 [class "text-center"] [text "hello flash of unstyled content"]
                  , h4 [] [ text "Your Name" ]
                  , input [ attribute "autofocus" "", class "form-control", id "playerName", attribute "minlength" "2", placeholder "Enter your name to play", attribute "required" "", attribute "tabindex" "1", type_ "text" ] []
-                 , h2 [] [ text "Welcome to RPS" ]
-                 , button [ onClick GetAllGames ] [ text "Get all games!" ]
-                 , ul [] (List.map renderGame games)
-                 , br [] []
-                 , textarea [ cols 40, rows 10 ] [ text "hello" ]
+                 , startGame
+                 , onGoingGames
                  ]
         hero = div [id "hero", class "jumbotron"] [inner]
     in
@@ -160,6 +201,9 @@ getAllGames =
 getAllGamesUrl : String
 getAllGamesUrl =
   Url.absolute ["api", "games"] []
+
+posixDecoder : Decode.Decoder Posix
+posixDecoder = int |> andThen (\time -> succeed (millisToPosix time))
 
 gameStateDecoder : Decode.Decoder State
 gameStateDecoder =
@@ -191,6 +235,7 @@ gameDecoder : Decode.Decoder Game
 gameDecoder =
    Decode.succeed Game
         |> required "gameId" string
+        |> required "createdAt" posixDecoder
         |> optional "player1" playerDecoder Nothing
         |> optional "player2" playerDecoder Nothing
         |> optional "winner" playerDecoder Nothing

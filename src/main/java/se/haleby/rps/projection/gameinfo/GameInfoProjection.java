@@ -20,8 +20,8 @@ public class GameInfoProjection {
     private final Map<String, GameInfo> games = new ConcurrentHashMap<>();
 
     @EventHandler
-    public void when(NewGameInitialized evt) {
-        games.put(evt.getGameId(), new GameInfo(evt.getGameId(), null, null, null, JOINABLE, true));
+    public void when(GameCreated evt) {
+        games.put(evt.getGameId(), GameInfo.builder().createdAt(evt.getCreatedAt()).gameId(evt.getGameId()).state(JOINABLE).joinable(true).build());
     }
 
     @EventHandler

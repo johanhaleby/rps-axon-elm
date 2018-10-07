@@ -4,11 +4,14 @@ import lombok.Builder;
 import lombok.Data;
 import org.axonframework.commandhandling.TargetAggregateIdentifier;
 
+import java.util.Date;
+
 @Data
 @Builder
-public class InitializeNewGame {
+public class CreateGame {
     @TargetAggregateIdentifier
     private final String gameId;
-    private final String initializer;
+    private final String creator;
     private final int rounds;
+    private final Date creationDate;
 }

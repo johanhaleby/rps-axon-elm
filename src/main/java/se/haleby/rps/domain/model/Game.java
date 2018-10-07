@@ -4,7 +4,7 @@ import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.commandhandling.model.AggregateIdentifier;
 import org.axonframework.commandhandling.model.AggregateRoot;
 import org.axonframework.eventsourcing.EventSourcingHandler;
-import se.haleby.rps.domain.command.InitializeNewGame;
+import se.haleby.rps.domain.command.CreateGame;
 import se.haleby.rps.domain.command.MakeMove;
 import se.haleby.rps.domain.event.*;
 
@@ -35,8 +35,8 @@ public class Game {
 
     // Command processing
     @CommandHandler
-    public Game(InitializeNewGame cmd) {
-        apply(NewGameInitialized.builder().gameId(cmd.getGameId()).initializedBy(cmd.getInitializer()).rounds(cmd.getRounds()).build());
+    public Game(CreateGame cmd) {
+        apply(GameCreated.builder().gameId(cmd.getGameId()).createdBy(cmd.getCreator()).rounds(cmd.getRounds()).createdAt(cmd.getCreationDate()).build());
     }
 
     @CommandHandler
@@ -45,7 +45,7 @@ public class Game {
             throw new IllegalStateException("Game is " + state);
         }
 
-        Round round = getOngoingOrInitiateNextRound(rounds);
+        Round round = getOngoingRoundOrStartNextRound(rounds);
         joinGameIfNotAlreadyPlaying(cmd.getPlayer());
 
         apply(MoveMade.builder().gameId(cmd.getGameId()).player(cmd.getPlayer()).move(cmd.getMove()).round(round.roundNumber()).build());
@@ -89,7 +89,7 @@ public class Game {
 
     // Event handling
     @EventSourcingHandler
-    public void when(NewGameInitialized evt) {
+    public void when(GameCreated evt) {
         id = evt.getGameId();
         numberOfRoundsInGame = evt.getRounds();
         state = STARTED;
@@ -145,7 +145,7 @@ public class Game {
         throw new IllegalStateException("Unknown player: " + player);
     }
 
-    private Round getOngoingOrInitiateNextRound(TreeSet<Round> rounds) {
+    private Round getOngoingRoundOrStartNextRound(TreeSet<Round> rounds) {
         final Round round;
         if (rounds.isEmpty() || rounds.last().isEnded()) {
             int roundNumber = rounds.size() + 1;
