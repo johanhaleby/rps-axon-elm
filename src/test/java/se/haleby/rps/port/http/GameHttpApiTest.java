@@ -8,6 +8,7 @@ import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.*;
 import se.haleby.rps.GameServer;
+import se.haleby.rps.GameServer.CmdArgs;
 import se.haleby.rps.domain.model.Move;
 import se.haleby.rps.projection.gameinfo.GameInfoState;
 
@@ -312,17 +313,17 @@ class GameHttpApiTest {
         RestAssured.reset();
     }
 
-    // @BeforeEach
-    // void startServer() {
-    //     gameServer = new GameServer(CmdArgs.with().port(8080)).start();
-    // }
-    //
-    // @AfterEach
-    // void stopServer() {
-    //     gameServer.stop();
-    // }
-    //
-    // @SuppressWarnings("UnusedReturnValue")
+    @BeforeEach
+    void startServer() {
+        gameServer = new GameServer(CmdArgs.with().port(8080)).start();
+    }
+
+    @AfterEach
+    void stopServer() {
+        gameServer.stop();
+    }
+
+    @SuppressWarnings("UnusedReturnValue")
     private static Response startGame(UUID gameId) {
         return startGame(gameId.toString());
     }
