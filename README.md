@@ -23,3 +23,5 @@ Then start the Elm compiler:
 	$ watch elm make src/main/elm/Frontend.elm --output src/main/resources/compiled-static/index.html
 	
 Now you can navigate to [http://localhost:8080](http://localhost:8080). Just reload to page to see changes made to the Elm source code.
+
+Work in progress :)
