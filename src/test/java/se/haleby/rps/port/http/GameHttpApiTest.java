@@ -82,7 +82,7 @@ class GameHttpApiTest {
 
     @Nested
     @DisplayName("multiple games are retrievable")
-    class A {
+    class MultipleGames {
 
         @Test
         @DisplayName("when issuing GET to /api/games returns all games")
